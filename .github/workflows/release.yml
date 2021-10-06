@@ -3,7 +3,7 @@ name: Release Charts
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - v*
 
 env:
   builds_url: http://asdrepo.isus.emc.com/artifactory/atlantic-helm-build
