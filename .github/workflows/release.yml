@@ -20,14 +20,14 @@ jobs:
         run: echo "::set-output name=version::$(make version)"
 
       - name: Create asset
-        run: tar -czvf ${{ env.GITHUB_WORKSPACE }}/csi-baremetal-operator-${{ steps.version.outputs.version }}.tgz charts
+        run: tar -czvf /tmp/csi-baremetal-operator-${{ steps.version.outputs.version }}.tgz charts
 
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
-          files: ${{ env.GITHUB_WORKSPACE }}/csi-baremetal-operator-${{ steps.version.outputs.version }}.tgz
+          files: /tmp/csi-baremetal-operator-${{ steps.version.outputs.version }}.tgz
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Configure Git
