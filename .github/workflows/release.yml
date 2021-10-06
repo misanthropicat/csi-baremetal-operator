@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Calculate version
-        run: echo "RELEASE_VERSION=${github.ref}" 
+        run: echo "RELEASE_VERSION=${github.ref.split('-')[0].strip('v')}"" 
 
       - name: Download Binary
         uses: wei/wget@v1
