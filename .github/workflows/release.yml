@@ -56,10 +56,11 @@ jobs:
           inputs: '{ "csi_operator_version": "${{ steps.vars.outputs.version }}", "release_tag":  "${{ steps.vars.outputs.release_tag }}"}'
           wait_interval: 5
         if: startsWith(github.ref, 'refs/tags/')
-
-      - name: Prepare to download artifacts
-        run: rm csi-baremetal*.tgz
-
+        
+  update_gh_pages:
+    name: Update GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v2
         if: startsWith(github.ref, 'refs/tags/')
