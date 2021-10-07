@@ -9,7 +9,7 @@ on:
 
 jobs:
   create_release:
-    name: Release
+    name: Create pre-release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -54,7 +54,7 @@ jobs:
           ref: master
           github_token: ${{ secrets.CSI_WF_TOKEN }}
           inputs: '{ "csi_operator_version": "${{ steps.vars.outputs.version }}", "release_tag":  "${{ steps.vars.outputs.release_tag }}"}'
-          wait_interval: 5
+          wait_interval: 8
         if: startsWith(github.ref, 'refs/tags/')
 
   update_gh_pages:
@@ -62,12 +62,21 @@ jobs:
     needs: create_release
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
       - name: Download all artifacts
         uses: actions/download-artifact@v2
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Check assets in working directory
-        run: ls | grep tgz
+        run: |
+          if [ "$(ls -lq csi-baremetal*.tgz | wc -l)" -eq 2 ]
+          then
+            echo "OK"
+          else
+            echo "Not all artifacts are"
+          fi
 
       - name: Configure Git
         run: |
