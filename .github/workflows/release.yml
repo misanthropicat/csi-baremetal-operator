@@ -8,7 +8,7 @@ on:
       - master
 
 jobs:
-  build:
+  create_release:
     name: Release
     runs-on: ubuntu-latest
     steps:
@@ -16,31 +16,49 @@ jobs:
         uses: actions/checkout@v2
       
       - name: Make version
-        id: version
-        run: echo "::set-output name=version::$(make version)"
+        id: vars
+        run: |
+          echo "::set-output name=version::$(make version)"
+          echo "::set-output name=release_tag::${GITHUB_REF/refs\/tags\//}"
 
       - name: Create asset
-        run: tar -czvf /tmp/csi-baremetal-operator-${{ steps.version.outputs.version }}.tgz charts
+        id: asset
+        run: |
+          ARCHIVE_NAME=csi-baremetal-operator-${{ steps.vars.outputs.version }}.tgz
+          tar -czvf ./$ARCHIVE_NAME charts
+          echo "::set-output name=archive_name::$ARCHIVE_NAME"
+
+      - name: Upload asset
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.asset.outputs.archive_name }}
+          path: ./${{ steps.asset.outputs.archive_name }}
 
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
-          files: /tmp/csi-baremetal-operator-${{ steps.version.outputs.version }}.tgz
-        if: startsWith(github.ref, 'refs/tags/')
+          files: ./${{ steps.asset.outputs.archive_name }}
+        if: startsWith(github.ref, 'refs/tags/')         
+
+      - name: Trigger release workflow in csi-baremetal repo
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: Release Charts
+          repo: misanthropicat/csi-baremetal
+          token: ${{ secrets.CSI_WF_TOKEN }}
+          inputs: '{ "csi_operator_version": ${{ steps.vars.version }}, "release_tag":  ${{ steps.vars.release_tag }}}'
+
+      - name: Download asset
+        uses: actions/download-artifact@v2
+        with:
+          name: csi-baremetal-deployment-${{ steps.vars.outputs.version }}.tgz
+
+      - name: Check assets in working directory
+        run: ls | grep tgz
 
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
-      - name: Install Helm
-        uses: azure/setup-helm@v1
-        with:
-          version: v3.4.0
-
-      - name: Update helm repository
-        uses: helm/chart-releaser-action@v1.2.1
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"          
