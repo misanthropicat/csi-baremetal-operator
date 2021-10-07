@@ -50,7 +50,7 @@ jobs:
           workflow: Release Charts
           repo: misanthropicat/csi-baremetal
           token: ${{ secrets.CSI_WF_TOKEN }}
-          inputs: '{ "csi_operator_version": ${{ steps.vars.outputs.version }}, "release_tag":  ${{ steps.vars.outputs.release_tag }}}'
+          inputs: '{ "csi_operator_version": "${{ steps.vars.outputs.version }}", "release_tag":  "${{ steps.vars.outputs.release_tag }}"}'
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Download asset
