@@ -103,9 +103,9 @@ jobs:
 
       - name: Update index.yaml
         run: |
-          git checkout -b feature-issue-${{ steps.create_issue.outputs.number }}-release-${{ steps.vars.outputs.release_tag }}
-          helm repo index ${{ steps.release_dir.outputs.path}} --url ${{ env.GITHUB_SERVERR_URL ||/${{ env.GITHUB_REPOSITORY }}/releases/download/${{ steps.vars.outputs.release_tag }} --merge docs/index.yaml
-          cp ${{ steps.release_dir.outputs.path}} ${{ env.GITHUB_WORKSPACE }}/docs
+          git checkout -b feature-issue-${steps.create_issue.outputs.number}-release-${steps.vars.outputs.release_tag}
+          helm repo index ${{ steps.release_dir.outputs.path}} --url ${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/releases/download/${steps.vars.outputs.release_tag} --merge docs/index.yaml
+          cp ${steps.release_dir.outputs.path} ${env.GITHUB_WORKSPACE}/docs
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Create Pull Request
