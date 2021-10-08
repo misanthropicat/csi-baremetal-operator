@@ -77,7 +77,7 @@ jobs:
         id: create_issue
         uses: JasonEtco/create-an-issue@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.CSI_WF_TOKEN }}
         with:
           filename: .github/release_template.md
           assignees: misanthropicat
