@@ -27,7 +27,8 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=version::$(make version)"
-          echo "::set-output name=release_tag::${GITHUB_REF#refs/heads/}"
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::set-output name=release_tag::${{ github.event.ref }}"
 
       - name: Tag release
         run: |
