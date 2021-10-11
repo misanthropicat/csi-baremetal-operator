@@ -24,6 +24,12 @@ jobs:
           echo "::set-output name=version::$(make version)"
           echo "::set-output name=release_tag::${GITHUB_REF/refs\/tags\//}"
 
+      - name: Tag release
+        run: |
+          TAG_NAME=${{ steps.vars.outputs.release_tag }}
+          git tag -a $TAG_NAME ${{ github.sha }} -m "release $TAG_NAME"
+          git push origin $TAG_NAME
+
       - name: Create csi-baremetal-operator asset
         id: asset_1
         run: |
