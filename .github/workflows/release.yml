@@ -58,7 +58,6 @@ jobs:
           files: |
             ./${{ steps.asset_1.outputs.archive_name }}
             ./${{ steps.asset_2.outputs.archive_name }}
-        if: startsWith(github.ref, 'refs/tags/')
 
       - name: Configure Git
         run: |
@@ -101,7 +100,6 @@ jobs:
           assignees: misanthropicat
           reviewers: misanthropicat
           draft: true
-        if: startsWith(github.ref, 'refs/tags/')
 
       - name: Install Helm
         uses: azure/setup-helm@v1
@@ -117,7 +115,7 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: ecs-csi-notifications
+          SLACK_CHANNEL: test-private-channel
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: 'Release ${{ steps.vars.outputs.release_tag }} is ready for review'
           SLACK_MESSAGE: 'Please review this PR: ${{ steps.pr.outputs.pull-request-url }}'
