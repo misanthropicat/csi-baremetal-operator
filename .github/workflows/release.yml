@@ -17,6 +17,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       
       - name: Make version
         id: vars
@@ -64,11 +69,6 @@ jobs:
           files: |
             ./${{ steps.asset_1.outputs.archive_name }}
             ./${{ steps.asset_2.outputs.archive_name }}
-
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
       - name: Download artifacts
         uses: actions/download-artifact@v2
