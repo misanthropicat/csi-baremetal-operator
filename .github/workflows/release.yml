@@ -27,11 +27,12 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=version::$(make version)"
-          echo "::set-output name=release_tag::${GITHUB_REF/refs\/tags\//}"
+          echo "::set-output name=release_tag::${GITHUB_REF##*/}"
 
       - name: Tag release
         run: |
           TAG_NAME=${{ steps.vars.outputs.release_tag }}
+          echo $TAG_NAME
           git tag -a $TAG_NAME ${{ github.sha }} -m "release $TAG_NAME"
           git push origin $TAG_NAME
 
