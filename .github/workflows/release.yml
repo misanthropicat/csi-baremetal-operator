@@ -1,11 +1,11 @@
 name: Release Charts
 
 on:
-  push:
-    tags:
-      - v*
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue for release creation number'
+        required: true
 
 jobs:
   create_release:
@@ -24,9 +24,8 @@ jobs:
       - name: Create asset
         id: asset
         run: |
-          ARCHIVE_NAME=csi-baremetal-operator-${{ steps.vars.outputs.version }}.tgz
-          tar -czvf ./$ARCHIVE_NAME charts
-          echo "::set-output name=archive_name::$ARCHIVE_NAME"
+          helm package charts/csi-baremetal-operator/ --version=${{ steps.vars.outputs.version }}
+          echo "::set-output name=archive_name::csi-baremetal-operator-${{ steps.vars.outputs.version }}.tgz"
 
       - name: Upload asset
         uses: actions/upload-artifact@v2
@@ -72,15 +71,6 @@ jobs:
       - name: Set variables
         id: vars
         run: echo "::set-output name=release_tag::${GITHUB_REF/refs\/tags\//}"
-      
-      - name: Create release issue
-        id: create_issue
-        uses: JasonEtco/create-an-issue@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.CSI_WF_TOKEN }}
-        with:
-          filename: .github/release_template.md
-          assignees: misanthropicat
 
       - name: Download all artifacts
         uses: actions/download-artifact@v2
@@ -109,7 +99,15 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Create Pull Request
+        id: pr
         uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.CSI_WF_TOKEN }}
+          branch: feature-issue-${{ github.event.inputs.issue_number }}-release-${{ steps.vars.outputs.release_tag }}
+          title: 'Release ${{ steps.vars.outputs.release_tag }}'
+          assignees: misanthropicat
+          reviewers: misanthropicat
+          draft: true
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Install Helm
@@ -121,3 +119,12 @@ jobs:
         uses: helm/chart-releaser-action@v1.2.1
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Notify about release
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: ecs-csi-notifications
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: 'Release ${{ steps.vars.outputs.release_tag }} is ready for review'
+          SLACK_MESSAGE: 'Please review this PR: ${{ steps.pr.outputs.pull-request-url }}'
