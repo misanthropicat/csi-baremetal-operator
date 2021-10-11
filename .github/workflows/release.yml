@@ -32,7 +32,6 @@ jobs:
       - name: Tag release
         run: |
           TAG_NAME=${{ steps.vars.outputs.release_tag }}
-          echo $TAG_NAME
           git tag -a $TAG_NAME ${{ github.sha }} -m "release $TAG_NAME"
           git push origin $TAG_NAME
 
@@ -64,6 +63,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.vars.outputs.release_tag }}
           name: Release ${{ steps.vars.outputs.release_tag }}
           draft: false
           prerelease: true
