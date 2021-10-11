@@ -27,7 +27,7 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=version::$(make version)"
-          echo "::set-output name=release_tag::${GITHUB_REF##*/}"
+          echo "::set-output name=release_tag::${GITHUB_REF##*/release_}"
 
       - name: Tag release
         run: |
