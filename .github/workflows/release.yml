@@ -6,6 +6,9 @@ on:
       issue_number:
         description: 'Issue for release creation number'
         required: true
+      csi_version:
+        description: 'csi-baremetal-deployment release version'
+        required: true
 
 jobs:
   create_release:
@@ -21,17 +24,29 @@ jobs:
           echo "::set-output name=version::$(make version)"
           echo "::set-output name=release_tag::${GITHUB_REF/refs\/tags\//}"
 
-      - name: Create asset
-        id: asset
+      - name: Create csi-baremetal-operator asset
+        id: asset_1
         run: |
-          helm package charts/csi-baremetal-operator/ --version=${{ steps.vars.outputs.version }}
+          helm package charts/csi-baremetal-operator/ --version ${{ steps.vars.outputs.version }} --app-version ${{ steps.vars.outputs.release_tag }} --dependency-update
           echo "::set-output name=archive_name::csi-baremetal-operator-${{ steps.vars.outputs.version }}.tgz"
 
-      - name: Upload asset
+      - name: Upload csi-baremetal-operator asset
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ steps.asset.outputs.archive_name }}
-          path: ./${{ steps.asset.outputs.archive_name }}
+          name: ${{ steps.asset_1.outputs.archive_name }}
+          path: ./${{ steps.asset_1.outputs.archive_name }}
+
+      - name: Create csi-baremetal-deployment asset
+        id: asset_2
+        run: |
+          helm package charts/csi-baremetal-deployment/ --version ${{ steps.vars.outputs.version }} --app-version ${{ steps.vars.outputs.release_tag }} --dependency-update
+          echo "::set-output name=archive_name::csi-baremetal-deployment-${{ steps.vars.outputs.version }}.tgz"
+
+      - name: Upload csi-baremetal-deployment asset
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.asset_2.outputs.archive_name }}
+          path: ./${{ steps.asset_2.outputs.archive_name }}      
 
       - name: Create release
         uses: softprops/action-gh-release@v1
@@ -40,39 +55,17 @@ jobs:
           name: Release ${{ steps.vars.outputs.release_tag }}
           draft: false
           prerelease: true
-          files: ./${{ steps.asset.outputs.archive_name }}
+          files: |
+            ./${{ steps.asset_1.outputs.archive_name }}
+            ./${{ steps.asset_2.outputs.archive_name }}
         if: startsWith(github.ref, 'refs/tags/')
-
-      - name: Trigger release workflow in csi-baremetal repo and wait the result
-        uses: convictional/trigger-workflow-and-wait@v1.3.0
-        with:
-          owner: misanthropicat
-          repo: csi-baremetal
-          workflow_file_name: release.yml
-          ref: master
-          github_token: ${{ secrets.CSI_WF_TOKEN }}
-          inputs: '{ "csi_operator_version": "${{ steps.vars.outputs.version }}", "release_tag":  "${{ steps.vars.outputs.release_tag }}"}'
-          wait_interval: 8
-        if: startsWith(github.ref, 'refs/tags/')
-
-  update_gh_pages:
-    name: Update GitHub Pages
-    needs: create_release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: Set variables
-        id: vars
-        run: echo "::set-output name=release_tag::${GITHUB_REF/refs\/tags\//}"
-
-      - name: Download all artifacts
+      - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
           path: /tmp/${{ steps.vars.outputs.release_tag }}
@@ -93,8 +86,8 @@ jobs:
 
       - name: Update index.yaml
         run: |
-          git checkout -b feature-issue-${steps.create_issue.outputs.number}-release-${steps.vars.outputs.release_tag}
-          helm repo index ${{ steps.release_dir.outputs.path}} --url ${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/releases/download/${steps.vars.outputs.release_tag} --merge docs/index.yaml
+          git checkout -b feature-issue-${github.event.inputs.issue_number}-release-${steps.vars.outputs.release_tag}
+          helm repo index ${steps.release_dir.outputs.path} --url ${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/releases/download/${steps.vars.outputs.release_tag} --merge docs/index.yaml
           cp ${steps.release_dir.outputs.path} ${env.GITHUB_WORKSPACE}/docs
         if: startsWith(github.ref, 'refs/tags/')
 
