@@ -1,0 +1,85 @@
+[33m6302488[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m fixes
+[33ma34902c[m retag release with annotation
+[33m2e43f96[m release tag from csi release workflow
+[33mbc30b00[m to test this changes
+[33m11852d5[m fix
+[33m2a5dbb6[m renewed workflow
+[33m15e2111[m fix for pushes without tag
+[33medd89a9[m trigger workflow in csi repo and check
+[33m0679db6[m with tmp dir
+[33m17ae11f[m release name defaults to tag. tgz isn't found why
+[33m5f481b3[m outputs is an Object
+[33mb02319b[m create release fix
+[33md1b279c[m resolved conflict
+[33mb0752f6[m make version + create tgz
+[33m688004a[m Update release.yml
+[33m8897087[m Update release.yml
+[33m76b2e3f[m Update release.yml
+[33mf57121f[m Update release.yml
+[33m8d378c4[m Merge pull request #1 from misanthropicat/test-branch
+[33mc9f5816[m[33m ([m[1;31morigin/test-branch[m[33m, [m[1;32mtest-branch[m[33m)[m test commit with tag
+[33m8a0aff8[m Create release.yml
+[33m14dcc1c[m Revert "[ISSUE-553] Update CRDs manifests (#74)" (#75)
+[33m993fd25[m [ISSUE-553] Update CRDs manifests (#74)
+[33me88f533[m [ISSUE-544] code owners added (#73)
+[33md70f0ec[m [ISSUE-538] Update node-driver-registrar sidecar (#71)
+[33mea27319[m [ISSUE-535] Remove outdated ACRs (#70)
+[33m83dd55a[m [ISSUE-533] Update labels on CSI pods (#68)
+[33m791d7e5[m [ISSUE-528] update pull policy and change default tag to green (#67)
+[33mee3ef35[m [ISSUE-526] Bump CSI Operator version to 0.5.0 (#66)
+[33mc9daaab[m [ISSUE-500] third party extenders (#58)
+[33m74fecf1[m [ISSUE-525] NVMe LVG storage class added (#64)
+[33mcdf514f[m [ISSUE-511] Fix restoring the same node after removal (#61)
+[33m3604d96[m [ISSUE-512] Move TopologyID labels deletion into Operator (#60)
+[33m1ebc772[m [ISSUE-515] Rename node operator image (#62)
+[33md08f85d[m [ISSUE-509] Add verbose kubectl output for LVG and ACR (#59)
+[33m35bb135[m [ISSUE-498] Remove alerts configmap mount (#57)
+[33m2a7b4c7[m [ISSUE-479] Refactor capacity planning for ACR (#51)
+[33m7cd4496[m [ISSUE-494] Make verbose kubectl output for CRs (#55)
+[33m693fab2[m [ISSUE-417] Bump memory limit for OpenShift (#56)
+[33m354c24d[m [ISSUE-488] update version to 0.4.0
+[33m6dae9b4[m[33m ([m[1;33mtag: v0.3.0-beta[m[33m)[m [ISSUE-476] Support registry secret in CSI (#49)
+[33m012c51f[m [ISSUE-464] Scheduler-extender readiness check (#47)
+[33mb274c40[m[33m ([m[1;33mtag: v0.3.0-alpha[m[33m)[m [ISSUE-473] Implement automated node removal (#48)
+[33m1ce991f[m[33m ([m[1;31morigin/bugfix-issue-463-ignore-not-found-pvc-and-retry-it[m[33m)[m [ISSUE-79] update version to 0.3.0 (#46)
+[33me4bca5e[m [ISSUE-459] Integration with codecov.io (#45)
+[33m43bf3b6[m [ISSUE-452] Refactor csi-baremetal node version selection (#43)
+[33m5850f57[m[33m ([m[1;33mtag: v0.2.2-beta[m[33m)[m [ISSUE-454] alerts config support (#44)
+[33m785dc14[m [ISSUE-436] Always patch Scheduler config on OpenShift (#42)
+[33m3669952[m [ISSUE-427] Check PVC fake-attach annotation on volume failed (#41)
+[33m14be74f[m [ISSUE-412] Fix redundant platform label updates (#33)
+[33mb4ecc9a[m [ISSUE-423] Fix incorrect extender port parameter in csi-deployment chart (#40)
+[33md20eba9[m [ISSUE-417] Fix CSI deployment via Operator on Openshift (#39)
+[33mf45d9e7[m [ISSUE-415] Update version to 0.2.2 (#38)
+[33m5c2be6d[m check if loopbackmgr (#37)
+[33m750732f[m [ISSUE-373] Fix configmap variables for the kubeconfig  (#36)
+[33mba46226[m [ISSUE-406] Fix platform tags adding (#35)
+[33md1fa537[m [ISSUE-405] Update CSI Operator RBAC recources (#34)
+[33m69260e7[m [ISSUE-397] Fix typo in LVGs CRD and remove outdated files (#32)
+[33m66f5870[m [ISSUE-367] Daemonset selection based on kernel version (#29)
+[33m79ffa6c[m [ISSUE-373] fix the wrong path in the patcher (#31)
+[33me51b156[m [ISSUE-373] CSI support for the rke2r1 (#30)
+[33m5081fa7[m [ISSUE-382] Fix mountPath for crashdumps (#28)
+[33m890954d[m [ISSUE-382] Labels for the logging and crashdump folder (#27)
+[33mc2151a6[m [ISSUE-363] CSI Operator fixes (found with e2e) (#21)
+[33me0e6381[m [Issue-372] add versions variable to makefile
+[33m8688268[m [ISSUE-377] Update version to 0.2.0 (#25)
+[33mca733cd[m [ISSUE-345] ACR CRD updated (#24)
+[33m880451c[m [ISSUE-360] Set provisionerTimeout
+[33m234aa11[m [ISSUE-340] Manage platform field in CRD (#20)
+[33m7718fd2[m [ISSUE-356] Fix controller livenessprobe args
+[33m614d133[m [ISSUE-355] Deploy NodeController (#16)
+[33m45e9d30[m [ISSUE-344] Fix sidecars work (#14)
+[33md2898cf[m [ISSUE-352] Support CSI uninstall finalizer (#15)
+[33md0fac06[m [ISSUE-350] Implement reconcile logic (#13)
+[33mf378e5b[m [ISSUE-336] Ability to deploy different drive managers (#8)
+[33m199b8a8[m [ISSUE-338] Add helm charts (#11)
+[33m5d9f8ab[m [ISSUE-332] Pass usenodeannotations feature flag in the operator (#9)
+[33mde417a5[m [ISSUE-337] Add build and linter checks in PR validation (#10)
+[33m3393f51[m [ISSUE-328]  Add crd, rbacs configmaps and SCs (#6)
+[33m769cfd3[m [ISSUE-334] Pass NodeSelectors, LogLevel, ImageName (#7)
+[33m84d4275[m [ISSUE-316] Base installation flow in operator (#5)
+[33mddded65[m [ISSUE-307] Add CSI Deployment CRD (#4)
+[33mc7c8834[m [ISSUE-318] add PR template (#3)
+[33m3272677[m [ISSUE-1] Generate project structure with kubebuilder (#2)
+[33m859a61b[m Initial commit

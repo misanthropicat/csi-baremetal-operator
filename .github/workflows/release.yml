@@ -30,7 +30,7 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=version::$(make version)"
-          echo "::set-output name=release_path::/tmp/${github.event.inputs.release_tag}"
+          echo "::set-output name=release_path::/tmp/${{ github.event.inputs.release_tag }}"
           echo "::set-output name=sha::${GITHUB_SHA::7}"
 
       - name: Retag release with annotation
@@ -98,6 +98,7 @@ jobs:
         with:
           token: ${{ secrets.CSI_WF_TOKEN }}
           branch: feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}
+          base: master
           title: 'Release ${{ github.event.inputs.release_tag }}'
           assignees: misanthropicat
           reviewers: misanthropicat
