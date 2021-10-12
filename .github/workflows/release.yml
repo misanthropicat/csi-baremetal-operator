@@ -9,6 +9,9 @@ on:
       csi_version:
         description: 'csi-baremetal-deployment release version'
         required: true
+      release_tag:
+        description: 'Release tag'
+        required: true
 
 jobs:
   create_release:
@@ -27,19 +30,18 @@ jobs:
         id: vars
         run: |
           echo "::set-output name=version::$(make version)"
-          echo "::set-output name=release_tag::${GITHUB_REF##*/release_}"
-          echo "::set-output name=release_path::/tmp/${GITHUB_REF##*/release_}"
+          echo "::set-output name=release_path::/tmp/${github.event.inputs.release_tag}"
 
       - name: Tag release
         run: |
-          TAG_NAME=${{ steps.vars.outputs.release_tag }}
+          TAG_NAME=${{ github.event.inputs.release_tag }}
           git tag -a $TAG_NAME ${{ github.sha }} -m "release $TAG_NAME"
           git push origin $TAG_NAME
 
       - name: Create csi-baremetal-operator asset
         id: asset_1
         run: |
-          helm package charts/csi-baremetal-operator/ --version ${{ steps.vars.outputs.version }} --app-version ${{ steps.vars.outputs.release_tag }} --dependency-update
+          helm package charts/csi-baremetal-operator/ --version ${{ steps.vars.outputs.version }} --app-version ${{ github.event.inputs.release_tag }} --dependency-update
           echo "::set-output name=archive_name::csi-baremetal-operator-${{ steps.vars.outputs.version }}.tgz"
 
       - name: Upload csi-baremetal-operator asset
@@ -51,7 +53,7 @@ jobs:
       - name: Create csi-baremetal-deployment asset
         id: asset_2
         run: |
-          helm package charts/csi-baremetal-deployment/ --version ${{ steps.vars.outputs.version }} --app-version ${{ steps.vars.outputs.release_tag }} --dependency-update
+          helm package charts/csi-baremetal-deployment/ --version ${{ steps.vars.outputs.version }} --app-version ${{ github.event.inputs.release_tag }} --dependency-update
           echo "::set-output name=archive_name::csi-baremetal-deployment-${{ steps.vars.outputs.version }}.tgz"
 
       - name: Upload csi-baremetal-deployment asset
@@ -64,8 +66,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: ${{ steps.vars.outputs.release_tag }}
-          name: Release ${{ steps.vars.outputs.release_tag }}
+          tag_name: ${{ github.event.inputs.release_tag }}
+          name: Release ${{ github.event.inputs.release_tag }}
           draft: false
           prerelease: true
           files: |
@@ -75,7 +77,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
-          path: /tmp/${{ steps.vars.outputs.release_tag }}
+          path: ${{ steps.vars.outputs.release_path }}
 
       - name: Checkout gh-pages
         uses: actions/checkout@v2
@@ -84,8 +86,8 @@ jobs:
 
       - name: Update index.yaml
         run: |
-          git checkout -b feature-issue-${{ github.event.inputs.issue_number }}-release-${{ steps.vars.outputs.release_tag }}
-          helm repo index ${{ steps.vars.outputs.release_path }} --url ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/download/${{ steps.vars.outputs.release_tag }} --merge docs/index.yaml
+          git checkout -b feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}
+          helm repo index ${{ steps.vars.outputs.release_path }} --url ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/download/${{ github.event.inputs.release_tag }} --merge docs/index.yaml
           cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
 
       - name: Create Pull Request
@@ -93,8 +95,8 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.CSI_WF_TOKEN }}
-          branch: feature-issue-${{ github.event.inputs.issue_number }}-release-${{ steps.vars.outputs.release_tag }}
-          title: 'Release ${{ steps.vars.outputs.release_tag }}'
+          branch: feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}
+          title: 'Release ${{ github.event.inputs.release_tag }}'
           assignees: misanthropicat
           reviewers: misanthropicat
           draft: false
@@ -115,5 +117,5 @@ jobs:
       #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
       #     SLACK_CHANNEL: test-private-channel
       #     SLACK_COLOR: ${{ job.status }}
-      #     SLACK_TITLE: 'Release ${{ steps.vars.outputs.release_tag }} is ready for review'
+      #     SLACK_TITLE: 'Release ${{ github.event.inputs.release_tag }} is ready for review'
       #     SLACK_MESSAGE: 'Please review this PR: ${{ steps.pr.outputs.pull-request-url }}'
