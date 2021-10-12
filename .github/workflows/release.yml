@@ -23,11 +23,12 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       
-      - name: Make version
+      - name: Set variables
         id: vars
         run: |
           echo "::set-output name=version::$(make version)"
-          echo "::set-output name=release_tag::${{ github.event.ref }}"
+          echo "::set-output name=release_tag::${GITHUB_REF##*/release_}"
+          echo "::set-output name=release_path::/tmp/${GITHUB_REF##*/release_}"
 
       - name: Tag release
         run: |
@@ -63,6 +64,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.vars.outputs.release_tag }}
           name: Release ${{ steps.vars.outputs.release_tag }}
           draft: false
           prerelease: true
@@ -74,27 +76,17 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           path: /tmp/${{ steps.vars.outputs.release_tag }}
-        if: startsWith(github.ref, 'refs/tags/')
-
-      - name: Check assets in release directory
-        id: release_dir
-        run: |
-          ls -l | grep csi-baremetal*.tgz
-          echo "::set-output name=path::/tmp/${steps.vars.outputs.release_tag}"
-        working-directory: /tmp/${{ steps.vars.outputs.release_tag }}
 
       - name: Checkout gh-pages
         uses: actions/checkout@v2
         with:
           ref: gh-pages
-        if: startsWith(github.ref, 'refs/tags/')
 
       - name: Update index.yaml
         run: |
-          git checkout -b feature-issue-${github.event.inputs.issue_number}-release-${steps.vars.outputs.release_tag}
-          helm repo index ${steps.release_dir.outputs.path} --url ${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/releases/download/${steps.vars.outputs.release_tag} --merge docs/index.yaml
-          cp ${steps.release_dir.outputs.path} ${env.GITHUB_WORKSPACE}/docs
-        if: startsWith(github.ref, 'refs/tags/')
+          git checkout -b feature-issue-${{ github.event.inputs.issue_number }}-release-${{ steps.vars.outputs.release_tag }}
+          helm repo index ${{ steps.vars.outputs.release_path }} --url ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/download/${{ steps.vars.outputs.release_tag }} --merge docs/index.yaml
+          cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
 
       - name: Create Pull Request
         id: pr
@@ -105,7 +97,7 @@ jobs:
           title: 'Release ${{ steps.vars.outputs.release_tag }}'
           assignees: misanthropicat
           reviewers: misanthropicat
-          draft: true
+          draft: false
 
       - name: Install Helm
         uses: azure/setup-helm@v1
@@ -117,11 +109,11 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Send slack notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: test-private-channel
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: 'Release ${{ steps.vars.outputs.release_tag }} is ready for review'
-          SLACK_MESSAGE: 'Please review this PR: ${{ steps.pr.outputs.pull-request-url }}'
+      # - name: Send slack notification
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      #     SLACK_CHANNEL: test-private-channel
+      #     SLACK_COLOR: ${{ job.status }}
+      #     SLACK_TITLE: 'Release ${{ steps.vars.outputs.release_tag }} is ready for review'
+      #     SLACK_MESSAGE: 'Please review this PR: ${{ steps.pr.outputs.pull-request-url }}'
