@@ -23,11 +23,12 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       
-      - name: Make version
+      - name: Set variables
         id: vars
         run: |
           echo "::set-output name=version::$(make version)"
           echo "::set-output name=release_tag::${GITHUB_REF##*/release_}"
+          echo "::set-output name=release_path::/tmp/${{ steps.vars.outputs.release_tag }}"
 
       - name: Tag release
         run: |
@@ -75,14 +76,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           path: /tmp/${{ steps.vars.outputs.release_tag }}
-        if: startsWith(github.ref, 'refs/tags/')
-
-      - name: Check assets in release directory
-        id: release_dir
-        run: |
-          ls -l | grep csi-baremetal*.tgz
-          echo "::set-output name=path::/tmp/${steps.vars.outputs.release_tag}"
-        working-directory: /tmp/${{ steps.vars.outputs.release_tag }}
 
       - name: Checkout gh-pages
         uses: actions/checkout@v2
@@ -93,8 +86,8 @@ jobs:
       - name: Update index.yaml
         run: |
           git checkout -b feature-issue-${github.event.inputs.issue_number}-release-${steps.vars.outputs.release_tag}
-          helm repo index ${steps.release_dir.outputs.path} --url ${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/releases/download/${steps.vars.outputs.release_tag} --merge docs/index.yaml
-          cp ${steps.release_dir.outputs.path} ${env.GITHUB_WORKSPACE}/docs
+          helm repo index ${steps.vars.outputs.release_path} --url ${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/releases/download/${steps.vars.outputs.release_tag} --merge docs/index.yaml
+          cp ${steps.vars.outputs.release_path} ${env.GITHUB_WORKSPACE}/docs
         if: startsWith(github.ref, 'refs/tags/')
 
       - name: Create Pull Request
