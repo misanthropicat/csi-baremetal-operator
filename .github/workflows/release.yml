@@ -97,7 +97,7 @@ jobs:
           title: 'Release ${{ steps.vars.outputs.release_tag }}'
           assignees: misanthropicat
           reviewers: misanthropicat
-          draft: true
+          draft: false
 
       - name: Install Helm
         uses: azure/setup-helm@v1
