@@ -32,6 +32,7 @@ jobs:
           echo "::set-output name=version::$(make version)"
           echo "::set-output name=release_path::/tmp/${{ github.event.inputs.release_tag }}"
           echo "::set-output name=sha::${GITHUB_SHA::7}"
+          echo "::set-output name=release_branch::feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}"
 
       - name: Retag release with annotation
         run: |
@@ -88,16 +89,19 @@ jobs:
 
       - name: Update index.yaml
         run: |
-          git checkout -b feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}
+          git checkout -b ${{ steps.vars.outputs.release_branch }}
           helm repo index ${{ steps.vars.outputs.release_path }} --url ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/download/${{ github.event.inputs.release_tag }} --merge docs/index.yaml
           cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
+          git add ./docs/index.yaml
+          git commit -m "[issue#${{ github.event.inputs.issue_number }} Update Helm repo index" --amend --signoff
+          git push origin ${{ steps.vars.outputs.release_branch }}
 
       - name: Create Pull Request
         id: pr
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.CSI_WF_TOKEN }}
-          branch: feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}
+          branch: ${{ steps.vars.outputs.release_branch }}
           base: master
           title: 'Release ${{ github.event.inputs.release_tag }}'
           assignees: misanthropicat
