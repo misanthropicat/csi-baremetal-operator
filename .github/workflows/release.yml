@@ -63,6 +63,7 @@ jobs:
           commit_message: "[issue#${{ github.event.inputs.issue_number }}] Set image tags values"
           commit_options: --amend --signoff
           push_options: --force-with-lease
+          tagging_message: ${{ github.event.inputs.release_tag }}
           file_pattern: charts/csi-baremetal-operator/values.yaml charts/csi-baremetal-deployment/values.yaml
           branch: ${{ steps.vars.outputs.current_branch }}
 
