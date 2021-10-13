@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: csi-baremetal-operator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: csi-baremetal
+    app.kubernetes.io/name: csi-baremetal
+spec:
+  selector:
+    matchLabels:
+      name: {{ .Release.Name }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: {{ .Release.Name }}
+        app: csi-baremetal
+        app.kubernetes.io/name: csi-baremetal
+        # release label used by fluentbit to make "release" folder
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccount: csi-baremetal-operator-sa
+      {{- if .Values.global.registrySecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.registrySecret }}
+      {{- end }}
+      containers:
+      - command:
+        - /manager
+        args:
+        - --enable-leader-election
+        image: {{ if .Values.global.registry }}{{ .Values.global.registry }}/{{ end }}{{ .Values.image.name }}:{{ .Values.image.tag }}
+        name: manager
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+          # Memory limit is increased due to bug in OpenShift 4.6 - https://bugzilla.redhat.com/show_bug.cgi?id=1904558
+          limits:
+            cpu: 100m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 20Mi
+        volumeMounts:
+        - mountPath: /crash-dump
+          name: crash-dump 
+      terminationGracePeriodSeconds: 10
+      volumes:  
+      - name: crash-dump
+        emptyDir: {}
+

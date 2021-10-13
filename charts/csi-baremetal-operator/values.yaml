@@ -1,0 +1,9 @@
+# Docker registry to pull images
+global:
+  registry:
+  registrySecret:
+# Image pull settings
+image:
+  name: csi-baremetal-operator
+  tag: 0.5.0-1.bd00c7d
+  pullPolicy: Always
