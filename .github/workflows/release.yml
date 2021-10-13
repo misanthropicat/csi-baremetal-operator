@@ -34,11 +34,38 @@ jobs:
           echo "::set-output name=sha::${GITHUB_SHA::7}"
           echo "::set-output name=release_branch::feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}"
 
+      - name: Install python3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10.0'
+
+      - name: Install dependencies for YAML secure parsing
+        run: |
+          sudo apt install jq
+          python -m pip install --upgrade pip
+          pip install yq
+
+      - name: Update csi-baremetal-operator image tag in values
+        run: yq eval -yi '.image.tag="${{ steps.vars.outputs.version }}"' ./values.yaml
+        working-directory: ./charts/csi-baremetal-operator
+
+      - name: Update csi-baremetal-deployment image tag in values
+        run: yq eval -yi '.image.tag="${{ github.event.inputs.csi_version }}"' ./values.yaml
+        working-directory: ./charts/csi-baremetal-deployment
+
+      - name: Commit and push changes
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "[issue#${{ github.event.inputs.issue_number }}] Set image tags values"
+          commit_options: --amend --signoff
+          file_pattern: charts/csi-baremetal-operator/*.yaml charts/csi-baremetal-deployment/*.yaml
+
       - name: Retag release with annotation
         run: |
           TAG_NAME=${{ github.event.inputs.release_tag }}
           git push origin :$TAG_NAME
-          git tag -a -f $TAG_NAME ${{ steps.vars.outputs.sha }} -m "release $TAG_NAME: issue ${{ github.event.inputs.issue_number }}"
+          git tag -a -f $TAG_NAME ${{ steps.commit.outputs.commit_hash }} -m "release $TAG_NAME: issue ${{ github.event.inputs.issue_number }}"
           git push origin $TAG_NAME
 
       - name: Create csi-baremetal-operator asset
@@ -93,7 +120,7 @@ jobs:
           helm repo index ${{ steps.vars.outputs.release_path }} --url ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/download/${{ github.event.inputs.release_tag }} --merge docs/index.yaml
           cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
           git add ./docs/index.yaml
-          git commit -m "[issue#${{ github.event.inputs.issue_number }} Update Helm repo index" --amend --signoff
+          git commit -m "[issue#${{ github.event.inputs.issue_number }}] Update Helm repo index" --amend --signoff
           git push origin ${{ steps.vars.outputs.release_branch }}
 
       - name: Create Pull Request
