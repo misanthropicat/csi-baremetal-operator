@@ -33,6 +33,7 @@ jobs:
           echo "::set-output name=release_path::/tmp/${{ github.event.inputs.release_tag }}"
           echo "::set-output name=sha::${GITHUB_SHA::7}"
           echo "::set-output name=release_branch::feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}"
+          echo "::set-output name=current_branch::${GITHUB_REF#refs/heads/}"
 
       - name: Install python3
         uses: actions/setup-python@v2
@@ -46,12 +47,14 @@ jobs:
           pip install yq
 
       - name: Update csi-baremetal-operator image tag in values
-        run: yq eval -yi '.image.tag="${{ steps.vars.outputs.version }}"' ./values.yaml
-        working-directory: ./charts/csi-baremetal-operator
+        uses: mikefarah/yq@master
+        with:
+            cmd: yq eval -i '.image.tag="${{ steps.vars.outputs.version }}"' ./charts/csi-baremetal-operator/values.yaml
 
       - name: Update csi-baremetal-deployment image tag in values
-        run: yq eval -yi '.image.tag="${{ github.event.inputs.csi_version }}"' ./values.yaml
-        working-directory: ./charts/csi-baremetal-deployment
+        uses: mikefarah/yq@master
+        with:
+            cmd: yq eval -i '.image.tag="${{ github.event.inputs.csi_version }}"' ./charts/csi-baremetal-deployment/values.yaml
 
       - name: Commit and push changes
         id: commit
@@ -59,12 +62,13 @@ jobs:
         with:
           commit_message: "[issue#${{ github.event.inputs.issue_number }}] Set image tags values"
           commit_options: --amend --signoff
-          file_pattern: charts/csi-baremetal-operator/*.yaml charts/csi-baremetal-deployment/*.yaml
+          push_options: --force-with-lease
+          file_pattern: charts/csi-baremetal-operator/values.yaml charts/csi-baremetal-deployment/values.yaml
+          branch: ${{ steps.vars.outputs.current_branch }}
 
-      - name: Retag release with annotation
+      - name: Tag release with annotation
         run: |
           TAG_NAME=${{ github.event.inputs.release_tag }}
-          git push origin :$TAG_NAME
           git tag -a -f $TAG_NAME ${{ steps.commit.outputs.commit_hash }} -m "release $TAG_NAME: issue ${{ github.event.inputs.issue_number }}"
           git push origin $TAG_NAME
 
