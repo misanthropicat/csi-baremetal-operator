@@ -70,6 +70,8 @@ jobs:
       - name: Tag release with annotation
         run: |
           TAG_NAME=${{ github.event.inputs.release_tag }}
+          git tag -d $TAG_NAME
+          git push origin :$TAG_NAME
           git tag -a -f $TAG_NAME ${{ steps.commit.outputs.commit_hash }} -m "release $TAG_NAME: issue ${{ github.event.inputs.issue_number }}"
           git push origin $TAG_NAME
 
@@ -121,12 +123,21 @@ jobs:
 
       - name: Update index.yaml
         run: |
+          git pull
           git checkout -b ${{ steps.vars.outputs.release_branch }}
           helm repo index ${{ steps.vars.outputs.release_path }} --url ${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/releases/download/${{ github.event.inputs.release_tag }} --merge docs/index.yaml
           cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
-          git add ./docs/index.yaml
-          git commit -m "[issue#${{ github.event.inputs.issue_number }}] Update Helm repo index" --amend --signoff
-          git push origin ${{ steps.vars.outputs.release_branch }}
+      
+      - name: Commit and push changes
+        id: commit_docs
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "[issue#${{ github.event.inputs.issue_number }}] Update Helm repo index"
+          commit_options: --amend --signoff
+          push_options: --force-with-lease
+          tagging_message: ${{ github.event.inputs.release_tag }}
+          file_pattern: ./docs/index.yaml
+          branch: ${{ steps.vars.outputs.release_branch }}
 
       - name: Create Pull Request
         id: pr
