@@ -135,7 +135,6 @@ jobs:
           commit_message: "[issue#${{ github.event.inputs.issue_number }}] Update Helm repo index"
           commit_options: --amend --signoff
           push_options: --force-with-lease
-          tagging_message: ${{ github.event.inputs.release_tag }}
           file_pattern: ./docs/index.yaml
           branch: ${{ steps.vars.outputs.release_branch }}
 
