@@ -150,7 +150,6 @@ jobs:
           assignees: misanthropicat
           reviewers: misanthropicat
           draft: false
-          push-to-fork: misanthropicat/csi-baremetal-operator
 
       - run: |
           echo "${{ steps.pr.outputs.pull-request-url }}"
