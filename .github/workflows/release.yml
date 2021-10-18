@@ -150,6 +150,8 @@ jobs:
           file_pattern: ./docs/index.yaml
           branch: ${{ steps.vars.outputs.release_branch }}
 
+      - run: echo $(git log --oneline)
+
       - name: Create Pull Request
         id: pr
         uses: peter-evans/create-pull-request@v3
@@ -162,10 +164,13 @@ jobs:
           reviewers: misanthropicat
           draft: false
           body: 'Automated PR for release docs updating'
+          signoff: true
+          delete-branch: true
+          labels: 'documentation'
 
       - run: |
-          echo "${{ steps.pr.outputs.output-url }}"
-          echo "${{ steps.pr.outputs.output-has-changed-files }}"
+          echo "${{ steps.pr.outputs.pull-request-url }}"
+          echo "${{ steps.pr.outputs.pull-request-operation }}"
 
       # - name: Send slack notification
       #   uses: rtCamp/action-slack-notify@v2
