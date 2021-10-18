@@ -29,11 +29,18 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
       
+      - name: Determine target version commit
+        id: target
+        uses: jungwinter/split@v2
+        with:
+          msg: ${{ github.event.inputs.csi_operator_version }}
+          separator: '.'
+
       - name: Set variables
         id: vars
         run: |
           echo "::set-output name=release_path::/tmp/${{ github.event.inputs.release_tag }}"
-          echo "::set-output name=sha::${GITHUB_SHA::7}"
+          echo "::set-output name=sha::${{ steps.target.outputs._3 }}"
           echo "::set-output name=release_branch::feature-issue-${{ github.event.inputs.issue_number }}-release-${{ github.event.inputs.release_tag }}"
           echo "::set-output name=current_branch::${GITHUB_REF#refs/heads/}"
 
