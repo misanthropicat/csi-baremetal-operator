@@ -119,8 +119,8 @@ jobs:
       
       - name: Lint charts
         run: |
-          helm lint charts/csi-baremetal-deployment/
-          helm lint charts/csi-baremetal-operator/
+          helm lint ./charts/csi-baremetal-deployment/
+          helm lint ./charts/csi-baremetal-operator/
 
       - name: Commit and push changes
         id: commit_docs
