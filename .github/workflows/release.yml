@@ -101,6 +101,12 @@ jobs:
           fromTag: ${{ steps.previous_tag.outputs.tag }}
           toTag: ${{ github.event.inputs.release_tag }}
 
+      - name: Generate changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.CSI_WF_TOKEN }}
+
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
