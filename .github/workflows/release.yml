@@ -117,6 +117,11 @@ jobs:
           helm repo index ${{ steps.vars.outputs.release_path }} --url ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.event.inputs.release_tag }} --merge docs/index.yaml
           cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
       
+      - name: Lint charts
+        run: |
+          helm lint charts/csi-baremetal-deployment/
+          helm lint charts/csi-baremetal-operator/
+
       - name: Commit and push changes
         id: commit_docs
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -139,6 +144,10 @@ jobs:
           reviewers: misanthropicat
           draft: false
           push-to-fork: misanthropicat/csi-baremetal-operator
+
+      - run: |
+          echo "${{ steps.pr.outputs.pull-request-url }}"
+          echo "${{ steps.pr.outputs.pull-request-operation }}"
 
       # - name: Send slack notification
       #   uses: rtCamp/action-slack-notify@v2
