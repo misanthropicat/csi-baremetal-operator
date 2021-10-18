@@ -90,6 +90,7 @@ jobs:
 
       - id: previous_tag
         run: |
+          git tag --sort=-creatordate | grep -A 1 ${{ github.event.inputs.release_tag }} | tail -n 1
           echo "::set-output name=tag::$(git tag --sort=-creatordate | grep -A 1 ${{ github.event.inputs.release_tag }} | tail -n 1)"
 
       - name: Generate changelog
