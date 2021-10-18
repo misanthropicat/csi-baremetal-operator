@@ -61,8 +61,6 @@ jobs:
       - name: Tag release with annotation
         run: |
           TAG_NAME=${{ github.event.inputs.release_tag }}
-          git tag -d $TAG_NAME
-          git push origin :$TAG_NAME
           git tag -a -f $TAG_NAME ${{ steps.vars.outputs.sha }} -m "release $TAG_NAME: issue ${{ github.event.inputs.issue_number }}"
           git push origin $TAG_NAME
 
