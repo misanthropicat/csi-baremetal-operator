@@ -93,12 +93,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ steps.asset_2.outputs.archive_name }}
-          path: ./${{ steps.asset_2.outputs.archive_name }}      
-
-      - id: previous_tag
-        run: |
-          git tag --sort=-creatordate | grep -A 1 ${{ github.event.inputs.release_tag }} | tail -n 1
-          echo "::set-output name=tag::$(git tag --sort=-creatordate | grep -A 1 ${{ github.event.inputs.release_tag }} | tail -n 1)"
+          path: ./${{ steps.asset_2.outputs.archive_name }}
 
       - name: Generate changelog
         id: changelog
@@ -160,9 +155,9 @@ jobs:
         with:
           source_branch: ${{ steps.vars.outputs.release_branch }}
           github_token: ${{ secrets.CSI_WF_TOKEN }}
-          destination_branch: master
+          destination_branch: gh-pages
           pr_title: '[ISSUE-${{ github.event.inputs.issue_number }}] Release ${{ github.event.inputs.release_tag }}'
-          pr_body: 'Automated PR'
+          pr_body: 'Automated PR for release docs updating'
           pr_assignee: misanthropicat
           pr_reviewer: misanthropicat
           pr_draft: false
