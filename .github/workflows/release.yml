@@ -130,6 +130,7 @@ jobs:
       - name: Update index.yaml
         run: |
           git pull
+          git checkout gh-pages
           git checkout -b ${{ steps.vars.outputs.release_branch }}
           helm repo index ${{ steps.vars.outputs.release_path }} --url ${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.event.inputs.release_tag }} --merge docs/index.yaml
           cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
