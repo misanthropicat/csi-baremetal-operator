@@ -88,11 +88,18 @@ jobs:
           name: ${{ steps.asset_2.outputs.archive_name }}
           path: ./${{ steps.asset_2.outputs.archive_name }}      
 
+      - id: previous_tag
+        run: |
+          echo "::set-output name=tag::$(git tag --sort=-creatordate | grep -A 1 ${{ github.event.inputs.release_tag }} | tail -n 1)"
+
       - name: Generate changelog
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.CSI_WF_TOKEN }}
+        with:
+          fromTag: ${{ steps.previous_tag.outputs.tag }}
+          toTag: ${{ github.event.inputs.release_tag }}
 
       - name: Create release
         uses: softprops/action-gh-release@v1
@@ -141,20 +148,20 @@ jobs:
 
       - name: Create Pull Request
         id: pr
-        uses: peter-evans/create-pull-request@v3
+        uses: repo-sync/pull-request@v2
         with:
-          token: ${{ secrets.CSI_WF_TOKEN }}
-          branch: ${{ steps.vars.outputs.release_branch }}
-          base: master
-          title: 'Release ${{ github.event.inputs.release_tag }}'
-          assignees: misanthropicat
-          reviewers: misanthropicat
-          draft: false
-          push-to-fork: misanthropicat/csi-baremetal-operator
+          source_branch: ${{ steps.vars.outputs.release_branch }}
+          github_token: ${{ secrets.CSI_WF_TOKEN }}
+          destination_branch: master
+          pr_title: '[ISSUE-${{ github.event.inputs.issue_number }}] Release ${{ github.event.inputs.release_tag }}'
+          pr_body: 'Automated PR'
+          pr_assignee: misanthropicat
+          pr_reviewer: misanthropicat
+          pr_draft: false
 
       - run: |
-          echo "${{ steps.pr.outputs.pull-request-url }}"
-          echo "${{ steps.pr.outputs.pull-request-operation }}"
+          echo "${{ steps.pr.outputs.output-url }}"
+          echo "${{ steps.pr.outputs.output-has-changed-files }}"
 
       # - name: Send slack notification
       #   uses: rtCamp/action-slack-notify@v2
