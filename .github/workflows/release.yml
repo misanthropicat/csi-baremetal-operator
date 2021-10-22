@@ -55,14 +55,10 @@ jobs:
           pip install yq
 
       - name: Update csi-baremetal-operator image tag in values
-        uses: mikefarah/yq@master
-        with:
-            cmd: yq eval -i '.image.tag="${{ github.event.inputs.csi_operator_version }}"' ./charts/csi-baremetal-operator/values.yaml
+        run: echo $(yq -i -y '.image.tag="${{ github.event.inputs.csi_operator_version }}"' ./charts/csi-baremetal-operator/values.yaml)
 
       - name: Update csi-baremetal-deployment image tag in values
-        uses: mikefarah/yq@master
-        with:
-            cmd: yq eval -i '.image.tag="${{ github.event.inputs.csi_version }}"' ./charts/csi-baremetal-deployment/values.yaml
+        run: echo $(yq -i -y '.image.tag="${{ github.event.inputs.csi_version }}"' ./charts/csi-baremetal-deployment/values.yaml)
 
       - name: Tag release with annotation
         run: |
