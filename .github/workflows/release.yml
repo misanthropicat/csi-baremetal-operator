@@ -128,10 +128,10 @@ jobs:
         run: |
           git pull
           git checkout gh-pages
-          gh_repo = ${{ github.repository }}
-          repo_name = `echo "${gh_repo##/*/}"`
-          helm_repo_url = https://${{ github.repository_owner }}.github.io/$repo_name/
-          helm repo index ${{ steps.vars.outputs.release_path }} --url $helm_repo_url --merge docs/index.yaml
+          gh_repo=${{ github.repository }}
+          repo_name=`echo "${gh_repo##/*/}"`
+          helm_repo_url=https://${{ github.repository_owner }}.github.io/${repo_name}/
+          helm repo index ${{ steps.vars.outputs.release_path }} --url ${helm_repo_url} --merge docs/index.yaml
           cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
       
       # - name: Lint charts
