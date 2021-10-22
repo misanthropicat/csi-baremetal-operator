@@ -2,4 +2,4 @@ apiVersion: v2
 appVersion: 0.5.0
 description: Bare-metal CSI Operator
 name: csi-baremetal-operator
-version: 0.5.0
+version: 0.5.0-70.db6a025
