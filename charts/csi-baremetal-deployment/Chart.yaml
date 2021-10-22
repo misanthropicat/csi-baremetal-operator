@@ -2,4 +2,4 @@ apiVersion: v2
 appVersion: 0.5.0
 description: Bare-metal CSI Deployment
 name: csi-baremetal-deployment
-version: 0.5.0-70.db6a025
+version: 0.5.0
