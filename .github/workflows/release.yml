@@ -69,7 +69,7 @@ jobs:
       - name: Create csi-baremetal-operator asset
         id: asset_1
         run: |
-          helm package charts/csi-baremetal-operator/ --version ${{ github.event.inputs.csi_operator_version }} --app-version ${{ steps.vars.outputs.app_version }} --dependency-update
+          helm package ./charts/csi-baremetal-operator/ --version ${{ github.event.inputs.csi_operator_version }} --app-version ${{ steps.vars.outputs.app_version }}
           echo "::set-output name=archive_name::csi-baremetal-operator-${{ github.event.inputs.csi_operator_version }}.tgz"
 
       - name: Upload csi-baremetal-operator asset
@@ -81,7 +81,7 @@ jobs:
       - name: Create csi-baremetal-deployment asset
         id: asset_2
         run: |
-          helm package charts/csi-baremetal-deployment/ --version ${{ github.event.inputs.csi_operator_version }} --app-version ${{ steps.vars.outputs.app_version }} --dependency-update
+          helm package ./charts/csi-baremetal-deployment/ --version ${{ github.event.inputs.csi_operator_version }} --app-version ${{ steps.vars.outputs.app_version }}
           echo "::set-output name=archive_name::csi-baremetal-deployment-${{ github.event.inputs.csi_operator_version }}.tgz"
 
       - name: Upload csi-baremetal-deployment asset
@@ -93,11 +93,11 @@ jobs:
       - name: Generate changelog
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.CSI_WF_TOKEN }}
         with:
+          token: ${{ secrets.CSI_WF_TOKEN }}
           fromTag: ${{ steps.previous_tag.outputs.tag }}
           toTag: ${{ github.event.inputs.release_tag }}
+          configuration: "./.github/workflows/changelog_config.json"
 
       - name: Create release
         uses: softprops/action-gh-release@v1
@@ -122,20 +122,12 @@ jobs:
         with:
           ref: gh-pages
 
-      - name: Update index.yaml
+      - name: Publish charts to gh-pages
         run: |
-          git pull
-          git checkout gh-pages
-          gh_repo=${{ github.repository }}
-          repo_name=`echo "${gh_repo##/*/}"`
-          helm_repo_url=https://${{ github.repository_owner }}.github.io/${repo_name}/
-          helm repo index ${{ steps.vars.outputs.release_path }} --url ${helm_repo_url} --merge docs/index.yaml
+          echo `ls ${{ steps.vars.outputs.release_path }}`
+          assets_url=https://github.com/${{ github.repository }}/releases/download/${{ github.event.inputs.release_tag }}
+          helm repo index ${{ steps.vars.outputs.release_path }} --url ${assets_url} --merge docs/index.yaml
           cp ${{ steps.vars.outputs.release_path }}/index.yaml -t ./docs
-      
-      # - name: Lint charts
-      #   run: |
-      #     helm lint ./charts/csi-baremetal-deployment/
-      #     helm lint ./charts/csi-baremetal-operator/
 
       - name: Commit and push changes
         id: commit_docs
