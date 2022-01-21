@@ -13,15 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
 package components
 
-// Controller encapsulates logic for CSI controller component
-type Controller struct {
-	Image    *Image              `json:"image,omitempty"`
-	Log      *Log                `json:"log,omitempty"`
-	Sidecars map[string]*Sidecar `json:"sidecars,omitempty"`
+import (
+	corev1 "k8s.io/api/core/v1"
+)
+
+// ResourceRequirements contain information for mem/cpu requirements
+type ResourceRequirements struct {
 	// +nullable
 	// +optional
-	Resources *ResourceRequirements `json:"resources,omitempty"`
+	Limits corev1.ResourceList `json:"limits,omitempty"`
+	// +nullable
+	// +optional
+	Requests corev1.ResourceList `json:"requests,omitempty"`
 }

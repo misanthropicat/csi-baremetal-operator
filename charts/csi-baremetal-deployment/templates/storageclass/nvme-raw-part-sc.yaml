@@ -1,12 +1,12 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: {{ .Values.storageClass.name }}-nvmelvg
+  name: {{ .Values.storageClass.name }}-nvme-raw-part
 # CSI driver name
-provisioner: csi-baremetal  
+provisioner: csi-baremetal
 reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
-allowVolumeExpansion: true
 parameters:
-  storageType: NVMELVG
+  storageType: NVME
   fsType: xfs
+  isPartitioned: "true"

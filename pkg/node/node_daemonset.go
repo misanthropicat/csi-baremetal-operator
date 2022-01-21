@@ -18,7 +18,6 @@ import (
 
 const (
 	nodeName                  = constant.CSIName + "-node"
-	nodeServiceAccountName    = "csi-node-sa"
 	loopbackManagerImageName  = "loopbackmgr"
 	loopbackManagerConfigName = "loopback-config"
 
@@ -34,6 +33,9 @@ const (
 	mountPointDirVolume   = "mountpoint-dir"
 	csiPathVolume         = "csi-path"
 	driveConfigVolume     = "drive-config"
+	nodeConfigVolume      = "node-config"
+	nodeConfigMapName     = "node-config"
+	nodeConfigPath        = "/etc/node_config"
 )
 
 // GetNodeDaemonsetPodsSelector returns a label-selector to use in the List method
@@ -76,8 +78,8 @@ func createNodeDaemonSet(csi *csibaremetalv1.Deployment, platform *PlatformDescr
 					DNSPolicy:                     corev1.DNSClusterFirst,
 					TerminationGracePeriodSeconds: pointer.Int64Ptr(constant.TerminationGracePeriodSeconds),
 					NodeSelector:                  nodeSelectors,
-					ServiceAccountName:            nodeServiceAccountName,
-					DeprecatedServiceAccount:      nodeServiceAccountName,
+					ServiceAccountName:            csi.Spec.Driver.Node.ServiceAccount,
+					DeprecatedServiceAccount:      csi.Spec.Driver.Node.ServiceAccount,
 					SecurityContext:               &corev1.PodSecurityContext{},
 					ImagePullSecrets:              common.MakeImagePullSecrets(csi.Spec.RegistrySecret),
 					SchedulerName:                 corev1.DefaultSchedulerName,
@@ -91,6 +93,7 @@ func createNodeDaemonSet(csi *csibaremetalv1.Deployment, platform *PlatformDescr
 func createNodeVolumes(csi *csibaremetalv1.Deployment) []corev1.Volume {
 	directory := corev1.HostPathDirectory
 	directoryOrCreate := corev1.HostPathDirectoryOrCreate
+	configMapMode := corev1.ConfigMapVolumeSourceDefaultMode
 	unset := corev1.HostPathUnset
 	volumes := make([]corev1.Volume, 0, 14)
 	volumes = append(volumes,
@@ -130,11 +133,19 @@ func createNodeVolumes(csi *csibaremetalv1.Deployment) []corev1.Volume {
 		corev1.Volume{Name: csiPathVolume, VolumeSource: corev1.VolumeSource{
 			HostPath: &corev1.HostPathVolumeSource{Path: "/var/lib/kubelet/plugins/kubernetes.io/csi", Type: &unset},
 		}},
+		corev1.Volume{
+			Name: nodeConfigVolume,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{Name: nodeConfigMapName},
+					DefaultMode:          &configMapMode,
+					Optional:             pointer.BoolPtr(true),
+				},
+			}},
 		constant.CrashVolume,
 	)
 
 	if isLoopbackMgr(csi.Spec.Driver.Node.DriveMgr.Image.Name) {
-		configMapMode := corev1.ConfigMapVolumeSourceDefaultMode
 		volumes = append(volumes, corev1.Volume{
 			Name: driveConfigVolume,
 			VolumeSource: corev1.VolumeSource{
@@ -187,6 +198,7 @@ func createNodeContainers(csi *csibaremetalv1.Deployment, platform *PlatformDesc
 		{Name: mountPointDirVolume, MountPath: "/var/lib/kubelet/pods", MountPropagation: &bidirectional},
 		{Name: csiPathVolume, MountPath: "/var/lib/kubelet/plugins/kubernetes.io/csi", MountPropagation: &bidirectional},
 		{Name: hostRootVolume, MountPath: "/hostroot", MountPropagation: &bidirectional},
+		{Name: nodeConfigMapName, MountPath: nodeConfigPath},
 		constant.CrashMountVolume,
 	}
 	return []corev1.Container{
@@ -204,6 +216,7 @@ func createNodeContainers(csi *csibaremetalv1.Deployment, platform *PlatformDesc
 			},
 			TerminationMessagePath:   constant.TerminationMessagePath,
 			TerminationMessagePolicy: constant.TerminationMessagePolicy,
+			Resources:                common.ConstructResourceRequirements(lp.Resources),
 		},
 		{
 			Name:            constant.DriverRegistrarName,
@@ -227,6 +240,7 @@ func createNodeContainers(csi *csibaremetalv1.Deployment, platform *PlatformDesc
 			},
 			TerminationMessagePath:   constant.TerminationMessagePath,
 			TerminationMessagePolicy: constant.TerminationMessagePolicy,
+			Resources:                common.ConstructResourceRequirements(dr.Resources),
 		},
 		{
 			Name:            "node",
@@ -280,11 +294,15 @@ func createNodeContainers(csi *csibaremetalv1.Deployment, platform *PlatformDesc
 				{Name: "NAMESPACE", ValueFrom: &corev1.EnvVarSource{
 					FieldRef: &corev1.ObjectFieldSelector{APIVersion: "v1", FieldPath: "metadata.namespace"},
 				}},
+				{Name: "POD_NAME", ValueFrom: &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{APIVersion: "v1", FieldPath: "metadata.name"},
+				}},
 			},
 			SecurityContext:          &corev1.SecurityContext{Privileged: pointer.BoolPtr(true)},
 			VolumeMounts:             nodeMounts,
 			TerminationMessagePath:   constant.TerminationMessagePath,
 			TerminationMessagePolicy: constant.TerminationMessagePolicy,
+			Resources:                common.ConstructResourceRequirements(node.Resources),
 		},
 		{
 			Name:            "drivemgr",
@@ -301,6 +319,7 @@ func createNodeContainers(csi *csibaremetalv1.Deployment, platform *PlatformDesc
 			VolumeMounts:             driveMgrMounts,
 			TerminationMessagePath:   constant.TerminationMessagePath,
 			TerminationMessagePolicy: constant.TerminationMessagePolicy,
+			Resources:                common.ConstructResourceRequirements(driveMgr.Resources),
 		},
 	}
 }

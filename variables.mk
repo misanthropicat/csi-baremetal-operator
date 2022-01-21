@@ -2,13 +2,15 @@
 PROJECT          := csi-baremetal-operator
 
 # controller-gen related vars
+CSI_OPERATOR_CHART_PATH=charts/csi-baremetal-operator
+CSI_DEPLOYMENT_CHART_PATH=charts/csi-baremetal-deployment
 CSI_CHART_CRDS_PATH=charts/csi-baremetal-operator/crds
 CONTROLLER_GEN_BIN=./bin/controller-gen
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
 ### version
-MAJOR            := 0
-MINOR            := 5
+MAJOR            := 1
+MINOR            := 1
 PATCH            := 0
 PRODUCT_VERSION  ?= ${MAJOR}.${MINOR}.${PATCH}
 BUILD_REL_A      := $(shell git rev-list HEAD |wc -l)
