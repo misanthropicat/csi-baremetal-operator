@@ -79,10 +79,10 @@ jobs:
         run: echo $(yq -i -y '.image.tag="${{ github.event.inputs.csi_version }}"' ./charts/csi-baremetal-deployment/values.yaml)
 
       - name: Tag release with annotation
-        if: ${{ !env.ACT }}
         run: |
           TAG_NAME=${{ github.event.inputs.release_tag }}
-          git tag -a -f $TAG_NAME ${{ steps.vars.outputs.sha }} -m "release $TAG_NAME"
+          echo $(git log --oneline | grep ${{ steps.vars.outputs.sha }})
+          git tag -a $TAG_NAME "${{ steps.vars.outputs.sha }}" -m "release $TAG_NAME"
           git push origin $TAG_NAME
 
       - name: Create csi-baremetal-operator asset
