@@ -78,6 +78,11 @@ jobs:
       - name: Update csi-baremetal-deployment image tag in values
         run: echo $(yq -i -y '.image.tag="${{ github.event.inputs.csi_version }}"' ./charts/csi-baremetal-deployment/values.yaml)
 
+      - name: Check git history
+        run: |
+          echo $(git log --oneline)
+        #  echo $(git rev-parse ${{ steps.vars.outputs.sha }})
+
       - name: Tag release with annotation
         if: ${{ !env.ACT }}
         run: |
