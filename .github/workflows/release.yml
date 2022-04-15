@@ -26,10 +26,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.branch }}
           fetch-depth: 0
+          token: ${{ secrets.CSI_WF_TOKEN }}
 
       - name: Configure Git
         run: |
