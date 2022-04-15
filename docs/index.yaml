@@ -11,6 +11,15 @@ entries:
     - https://github.com/misanthropicat/csi-baremetal-operator/releases/download/v1.0.0-test/csi-baremetal-deployment-1.1.0-151.acab9de.tgz
     version: 1.1.0-151.acab9de
   - apiVersion: v2
+    appVersion: 1.1.0
+    created: "2022-04-15T08:27:19.404169471Z"
+    description: Bare-metal CSI Deployment
+    digest: f35f89f027a7eddc81640496b1808ac4be376326dda015a04fb2be5652b56c37
+    name: csi-baremetal-deployment
+    urls:
+    - https://github.com/misanthropicat/csi-baremetal-operator/releases/download/v1.1.0-test/csi-baremetal-deployment-1.1.0-99.36a85e3.tgz
+    version: 1.1.0-99.36a85e3
+  - apiVersion: v2
     appVersion: 0.5.0
     created: "2021-10-26T14:24:33.359897911Z"
     description: Bare-metal CSI Deployment
@@ -66,6 +75,15 @@ entries:
     - https://github.com/misanthropicat/csi-baremetal-operator/releases/download/v1.0.0-test/csi-baremetal-operator-1.1.0-151.acab9de.tgz
     version: 1.1.0-151.acab9de
   - apiVersion: v2
+    appVersion: 1.1.0
+    created: "2022-04-15T08:27:19.404730879Z"
+    description: Bare-metal CSI Operator
+    digest: 2901ff60da84b364a7d31deff13b9a3bb3cd5d7d6e33ee89a3c836efaba8d664
+    name: csi-baremetal-operator
+    urls:
+    - https://github.com/misanthropicat/csi-baremetal-operator/releases/download/v1.1.0-test/csi-baremetal-operator-1.1.0-99.36a85e3.tgz
+    version: 1.1.0-99.36a85e3
+  - apiVersion: v2
     appVersion: 0.5.0
     created: "2021-10-26T14:24:33.360462624Z"
     description: Bare-metal CSI Operator
@@ -110,4 +128,4 @@ entries:
     urls:
     - https://github.com/dell/csi-baremetal-operator/releases/download/v0.2.2-beta/csi-baremetal-operator-0.2.2-39.5850f57.tgz
     version: 0.2.2-39.5850f57
-generated: "2022-01-25T05:56:03.263298383Z"
+generated: "2022-04-15T08:27:19.389466344Z"
